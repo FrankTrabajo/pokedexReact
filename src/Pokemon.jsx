@@ -5,6 +5,9 @@ function Pokemon(){
     const[pokemon, setPokemon] = useState([]);
     const[datosPokemon, setDatosPokemon] = useState([]);
 
+    const[filtroPokemon, setFiltroPokemon] = useState('');
+    const [tiposPokemon, setTiposPokemon] = useState(new Set());
+
     //Se utiliza useEffect para ponerse en contacto con la pokeApi
     //Aqui obtengo los pokemon por fetch API
     //Solo obtengo los nombres de los pokemon y su URL
@@ -55,11 +58,27 @@ function Pokemon(){
             );
             //Aqui le doy los datos obtenidos a la constante detallesPokemon
             setDatosPokemon(detallesPokemon);
+
+            //Aqui lo que hago es guardar todos los tipos de pokemon que hay en el set,
+            //Para luego mostrarlos en el select
+            const tipos = new Set(detallesPokemon.map(pokemon => pokemon.type));
+            setTiposPokemon(tipos);
         }
         //Llamo al metodo
         getDatosPokemon();
         //Y le digo que los datos los va a obtener la variable datosPokemon
     }, [datosPokemon]);
+
+
+    //Lo que hace aqui es la funcion de filtrado de los pokemon, es decir, que lo primero si no se
+    //Ha mostrado ningun filtro muestra todos
+    const pokemonFiltrado = datosPokemon.filter(pokemon =>
+        filtroPokemon === '' || pokemon.type === filtroPokemon
+    );
+
+    //Cuando se haga setFiltroPokemon, lo que haremos será darle un valor a filtroPokemon
+    //A partir de ese valor que lo que hacemos es en la llamada para pintar los pokemon
+    //Es mostrar solo los pokemons que tenemos guardados en nuestro set.
 
     return (
         <>
@@ -70,16 +89,21 @@ function Pokemon(){
         </header>
         <nav>
             <div class="buscar-container">
-                <input type='text' name='buscar' placeholder='Buscar pokemon'></input>
+                <select onChange={(e) => setFiltroPokemon(e.target.value)}>
+                <option value="">Todos</option>
+                    {[...tiposPokemon].map((tipo) => (
+                        <option key={tipo} value={tipo}>{tipo}</option>
+                    ))}
+                </select>
             </div>
-            <div class="crear-container">
-                <Link to="/create">Crear nuevo pokemon</Link>
+            <div>
+                
             </div>
         </nav>
         <main>
             <div className="main-container">
-            {datosPokemon.map((pokemon, index) => (
-                <div className="pokemon-card">
+            {pokemonFiltrado.map((pokemon) => (
+                <div key={pokemon.id} class="pokemon-card">
                     
                     <p>{pokemon.type.toUpperCase()}</p>
                     <table class="table-pokemon">
