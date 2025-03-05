@@ -8,6 +8,8 @@ function Pokemon(){
     const[filtroPokemon, setFiltroPokemon] = useState('');
     const [tiposPokemon, setTiposPokemon] = useState(new Set());
 
+    const[pokemonBusca, setPokemonBusca] = useState('');
+
     //Se utiliza useEffect para ponerse en contacto con la pokeApi
     //Aqui obtengo los pokemon por fetch API
     //Solo obtengo los nombres de los pokemon y su URL
@@ -46,6 +48,7 @@ function Pokemon(){
                         id: datos.id,
                         name: datos.name.toUpperCase(),
                         type: datos.types[0].type.name,
+                        ...( datos.types[1] && {type2: datos.types[1].type.name}),
                         hp: datos.stats[0].base_stat,
                         attack: datos.stats[1].base_stat,
                         defense: datos.stats[2].base_stat,
@@ -73,7 +76,8 @@ function Pokemon(){
     //Lo que hace aqui es la funcion de filtrado de los pokemon, es decir, que lo primero si no se
     //Ha mostrado ningun filtro muestra todos
     const pokemonFiltrado = datosPokemon.filter(pokemon =>
-        filtroPokemon === '' || pokemon.type === filtroPokemon
+        (filtroPokemon.length === 0 || filtroPokemon.includes(pokemon.type)) &&
+        pokemon.name.toLowerCase().includes(pokemonBusca.toLowerCase())
     );
 
     //Cuando se haga setFiltroPokemon, lo que haremos será darle un valor a filtroPokemon
@@ -89,27 +93,35 @@ function Pokemon(){
         </header>
         <nav>
             <div class="buscar-container">
-                <select onChange={(e) => setFiltroPokemon(e.target.value)}>
-                <option value="">Todos</option>
-                    {[...tiposPokemon].map((tipo) => (
-                        <option key={tipo} value={tipo}>{tipo}</option>
-                    ))}
-                </select>
+                <div>
+                    <input type='text' onKeyUp={(e) => setPokemonBusca(e.target.value)} placeholder='Buscar pokemon'/>
+                </div>
+
+                {[...tiposPokemon].map((tipo) => (
+                <div class="tipos-container">
+                    <label>{tipo}</label>
+                    <input type="checkbox" onClick={(e) => 
+                        setFiltroPokemon(p => e.target.checked
+                            ? [...p, e.target.value]
+                            : p.filter(t => t !== e.target.value))}
+                        value={tipo}/>
+                </div>
+                ))}
             </div>
-            <div>
-                
-            </div>
+
         </nav>
         <main>
             <div className="main-container">
             {pokemonFiltrado.map((pokemon) => (
                 <div key={pokemon.id} class="pokemon-card">
-                    
                     <p>{pokemon.type.toUpperCase()}</p>
+                    { pokemon.type2 != null &&
+                        <p>{pokemon.type2.toUpperCase()}</p>
+                     }
+                    
                     <table class="table-pokemon">
                         <tr>
                             <td rowSpan="6" class="td-img">
-                            
                                 <p>Id: { pokemon.id.toString().padStart(3, "0") }</p>
                                 <img src={pokemon.photo}></img><p><b>{pokemon.name}</b></p>
                             </td>
